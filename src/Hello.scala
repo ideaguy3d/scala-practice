@@ -5,7 +5,7 @@ import scala.List
 import scala.Array
 */
 
-// to run from the CLI relative to "scala_practice":
+// to run from the CLI relative to "scala-practice":
 // $ :load src/Hello.scala
 // $ val/var hello = new Hello
 // $ hello.some_method_name()
