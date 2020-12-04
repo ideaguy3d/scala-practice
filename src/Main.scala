@@ -15,7 +15,130 @@ object Main extends App {
   //case_class_pattern_matching()
   //sequence_pattern_matching()
   //type_pattern_matching()
-  guarded_pattern_matching()
+  //guarded_pattern_matching()
+  //collection_list()
+  //collection_set()
+  //collection_map_tuple()
+  //numeric_collections()
+  //filter_size_convert_collection()
+  map_collection_transform()
+
+
+  def flatmap_collection_transform(): Unit = {
+
+  }
+
+  def map_collection_transform(): Unit = {
+      
+  }
+
+  def filter_size_convert_collection(): Unit = {
+    val page_load_times = List(2, 1, 4, 1, 5, 11, 33, 45, 2, 4, 21)
+
+    val more_than_10secs = page_load_times.filter(sec => sec >= 10)
+    val more_than_10secs_compact = page_load_times.filter(_ >= 10)
+    val lowest_time_greater_10 = page_load_times.filter(_ >= 10).min
+    val worst_time_greater_10 = page_load_times.filter(_ >= 10).max
+
+    var list = List(1, 2, 3)
+    var set = Set(1, 2, 3)
+    val map = Map(1 -> "Sunday", 2 -> "Monday", 3 -> "Tuesday")
+
+    // there are consistent props & methods for collections
+    println(list.isEmpty, list.nonEmpty, set.isEmpty, set.nonEmpty, map.isEmpty, map.nonEmpty)
+
+    list = List(4, 5, 11, 3, 22, 22)
+    set = Set(1,2,3,4)
+    val list_to_set = list.toSet
+    val set_to_list = set.toList
+
+  }
+
+  def numeric_collections(): Unit = {
+    val numbers = List(1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+
+    val sum = numbers.sum
+    val product = numbers.product
+    val max = numbers.max
+    val min = numbers.min
+  }
+
+  def collection_map_tuple(): Unit = {
+    val map = Map(1 -> "Sunday", 2 -> "Monday", 3 -> "Tuesday")
+
+    val monday = map(2)
+    val map_add = map + (4 -> "Wednesday")
+    val map_subtract = map - 1
+
+    // iterate over
+    map.foreach(entry => println(s"Key; ${entry._1}, Value: ${entry._2}"))
+
+    val tuple = (11, 22, 33)
+    val tuple_pos1 = tuple._1 // 11
+    val tuple_pos2 = tuple._2 // 22
+    val tuple_pos3 = tuple._3 // 33
+
+    val map_join = map ++ Map(4 -> "Wednesday", 5 -> "Thursday")
+  }
+
+  def collection_set(): Unit = {
+    val set = Set(1, 1, 2, 2, 3, 3, 4, 4)
+
+    val set_add = set + 6
+    val set_remove = set - 1
+    val set_merge = set ++ Set(99, 34)
+  }
+
+  def collection_list(): Unit = {
+    /*
+      "Attributes"
+      .head
+      .tail
+      .init
+      .last
+      :+
+      +:
+      ++
+      .drop()
+      .dropRight()
+      .dropWhile()
+    */
+    val linked_list = List(1, 2, 3, 4)
+
+    val head = linked_list.head
+    val tail = linked_list.tail // all elems except the first elem
+    val init = linked_list.init // all elems except the last elem
+    val last = linked_list.last
+
+    // creates a copy of the orig linked list
+    val append_list = linked_list :+ 5
+    val prepend_list = 0 +: linked_list
+    val post_merge_list = linked_list ++ List(5, 6, 7)
+    val pre_merge_list = List(-2, -1, 0) ++ linked_list
+    val drop_from_left = linked_list.drop(1)
+    val drop_from_right = linked_list.dropRight(1)
+    // higher order function to drop all elems less than 3
+    val drop_while = linked_list.dropWhile(_ < 3)
+
+    println(
+      "\n" + head + "\n", tail + "\n", init + "\n", last + "\n", append_list + "\n", prepend_list + "\n",
+      post_merge_list + "\n", pre_merge_list + "\n", drop_from_left + "\n", drop_from_right + "\n",
+      drop_while + "\n"
+    )
+
+    /* (
+        1
+        ,List(2, 3, 4)
+        ,List(1, 2, 3)
+        ,4
+        ,List(1, 2, 3, 4, 5)
+        ,List(0, 1, 2, 3, 4)
+        ,List(1, 2, 3, 4, 5, 6, 7)
+        ,List(2, 3, 4)
+        ,List(1, 2, 3)
+        ,List(3, 4)
+      ) */
+  }
 
   def guarded_pattern_matching(): Unit = {
     case class Email(from: String, body: String)
@@ -25,8 +148,8 @@ object Main extends App {
     val regular_email = Email("sales@marketing.com", "Learn this strange trick")
 
     def alert_or_not(email: Email): Unit = email match {
-      case Email(from, _) if important_emails.contains(from)=> println("This is important")
-      case Email(_,_) => println("NOT important")
+      case Email(from, _) if important_emails.contains(from) => println("This is important")
+      case Email(_, _) => println("NOT important")
     }
 
     alert_or_not(important_email)
