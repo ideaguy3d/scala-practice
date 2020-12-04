@@ -1,4 +1,7 @@
-import scala.util.{Try, Success, Failure}
+import java.util.Date
+import scala.concurrent.{Future, Promise}
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.{Failure, Success, Try}
 
 object Main extends App {
   /*
@@ -21,15 +24,214 @@ object Main extends App {
   //collection_map_tuple()
   //numeric_collections()
   //filter_size_convert_collection()
-  map_collection_transform()
+  //map_collection_transform()
+  //flatmap_collection_transform()
+  //option_flatmap_collection()
+  //future_execution_context()
+  //filter_collect_futures()
+  //other_asynchronous_ops()
+  future_failures()
+
+  def future_failures(): Unit = {
+    val failed_future = Future { 1 / 0 }
+    println(failed_future.value)
+    val failed_exception = failed_future.failed
+    println(failed_exception.value)
+
+    val fallback_future = Future.successful(100)
+    // the fallbackTo() has to get chained. It is part of the expression
+    val computation = Future { 1 / 0 } fallbackTo (fallback_future)
+    println(computation)
+
+    val resultFuture = Future { 1 / 0 }
+    println(resultFuture)
+    // pattern matching
+    val future_recover = resultFuture recover { case e: ArithmeticException => 0 }
+    println(future_recover)
+
+    /*
+      None
+      None
+      Future(Success(100))
+    */
+  }
+
+  def other_asynchronous_ops(): Unit = {
+    // wrapping future values
+    val future_1 = Future.successful("success")
+    val future_2 = Future.failed(new Exception("fail"))
+
+    // using a promise
+    val promise = Promise[Int]
+    println(promise.future)
+    println(promise.success(3710))
+    println(promise.future)
+    println(promise.future.value)
+
+    /*
+      Future(<not completed>)
+      Future(Success(3710))
+      Future(Success(3710))
+      Some(Success(3710))
+    */
+  }
+
+  def filter_collect_futures(): Unit = {
+    val salary = Future {
+      Thread.sleep(2)
+      250
+    }
+
+    val lgSalary = salary.filter(_ > 200)
+
+    // apply filter & transformation in one operation with pattern match & pattern match guard
+    val salaryIncrement = salary.collect { case salary if salary < 5000 => salary + 100 }
+
+    Thread.sleep(5)
+
+    println(lgSalary)
+    println(salaryIncrement)
+
+    /*
+      Future(Success(250))
+      Future(Success(350))
+    */
+  }
+
+  def future_transformations(): Unit = {
+    val salary = Future {
+      Thread.sleep(2);
+      100
+    }
+    val salaryWithBonus = salary.map(value => value + 500)
+
+    println(s"\n\nSalary with Bonus $salaryWithBonus")
+    for (elem <- Array(1, 2, 3)) println(elem)
+    println(s"Salary with Bonus $salaryWithBonus")
+    /*
+      Salary with Bonus Future(<not completed>)
+      1
+      2
+      3
+      Salary with Bonus Future(Success(600))
+    */
 
 
-  def flatmap_collection_transform(): Unit = {
+    // Loop over a Future
+    val productPrice = Future {
+      Thread.sleep(2);
+      150
+    }
+    val productTax = Future {
+      Thread.sleep(2);
+      150
+    }
+    val finalPrice = for {
+      price <- productPrice
+      tax <- productTax
+    } yield price + tax
+
+    finalPrice.onComplete({
+      case Success(finalPrice) => println("\n\n final price success === " + finalPrice)
+      case Failure(e) => println(s"\n\n final price failure === $e")
+    })
+
+    Thread.sleep(4)
+    println(finalPrice)
+
+    /*
+        final price success === 300
+        Future(Success(300))
+    */
+  }
+
+  def future_execution_context(): Unit = {
+
+    val future_x = Future {
+      Thread.sleep(5);
+      21 * 2
+    }
+
+    println(future_x.isCompleted)
+    println(new Date())
+    println(new Date())
+    println(future_x.isCompleted)
+    println(future_x.value + "\n\n")
+
+    future_x.onComplete({
+      case Success(result) => println(s"on complete result = $result")
+      case Failure(e) => println(s"on complete failure = $e")
+    })
+
+    /*
+      false
+      Thu Dec 03 18:36:04 PST 2020
+      Thu Dec 03 18:36:04 PST 2020
+      true
+      Some(Success(42))
+      on complete result = 42
+    */
 
   }
 
+  def option_flatmap_collection(): Unit = {
+    def j_toInt(s: String): Option[Int] = {
+      try {
+        Some(s.toInt)
+      }
+      catch {
+        case e: NumberFormatException => None
+      }
+    }
+
+    val params = List("10", "eight", "5", "four", "3", "20", "one")
+    val args_map = params.map(j_toInt)
+    println(args_map)
+    val args_flatmap = params.flatMap(j_toInt)
+    println(args_flatmap)
+    val argsMapSum = params.map(j_toInt).flatten.sum
+    println(argsMapSum)
+    val argsFlatmapSum = params.flatMap(j_toInt).sum
+    println(argsFlatmapSum)
+
+    /*
+      List(Some(10), None, Some(5), None, Some(3), Some(20), None)
+      List(10, 5, 3, 20)
+      38
+      38
+    */
+  }
+
+  def flatmap_collection_transform(): Unit = {
+    val nested_list = List(List(1, 2, 3, 4), List(4, 5, 6, 7))
+
+    val map_map = nested_list.map(inner_list => inner_list.map(_ + 1))
+    println(map_map)
+    val map_map_flatten = nested_list.map(inner_list => inner_list.map(_ + 1)).flatten
+    println(map_map_flatten)
+    val flatmap = nested_list.flatMap(inner_list => inner_list.map(_ + 1))
+    println(flatmap)
+  }
+
   def map_collection_transform(): Unit = {
-      
+    case class Event(location: String, dayOfWeek: String, sessionTime: Int, source: String)
+
+    val event1 = Event(location = "US", dayOfWeek = "Sun", sessionTime = 10, source = "Twitter")
+    val event2 = Event(location = "China", dayOfWeek = "Mon", sessionTime = 15, source = "WeChat")
+    val event3 = Event(location = "New Zealand", dayOfWeek = "Sun", sessionTime = 30, source = "Twitter")
+    val event4 = Event(location = "US", dayOfWeek = "Tue", sessionTime = 5, source = "Facebook")
+    val event5 = Event(location = "US", dayOfWeek = "Thu", sessionTime = 24, source = "LinkedIn")
+    val event6 = Event(location = "US", dayOfWeek = "Sat", sessionTime = 60, source = "Facebook")
+
+    val events = List(event1, event2, event3, event4, event5, event6)
+
+    val locations = events.map(event => event.location)
+    val locations_compact = events.map(_.location)
+    println(locations) // List(US, China, New Zealand, US, US, US)
+
+    val sources = events.map(_.source)
+    val days = events.map(_.dayOfWeek)
+    println(sources, days) // (List(Twitter, WeChat, Twitter, Facebook, LinkedIn, Facebook),List(Sun, Mon, Sun, Tue, Thu, Sat))
   }
 
   def filter_size_convert_collection(): Unit = {
@@ -48,10 +250,9 @@ object Main extends App {
     println(list.isEmpty, list.nonEmpty, set.isEmpty, set.nonEmpty, map.isEmpty, map.nonEmpty)
 
     list = List(4, 5, 11, 3, 22, 22)
-    set = Set(1,2,3,4)
+    set = Set(1, 2, 3, 4)
     val list_to_set = list.toSet
     val set_to_list = set.toList
-
   }
 
   def numeric_collections(): Unit = {
@@ -310,6 +511,5 @@ object Main extends App {
   }
 
   def probability_occurrence(numerator: Float, denominator: Float) = numerator / denominator
-
 
 }
