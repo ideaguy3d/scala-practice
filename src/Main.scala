@@ -65,7 +65,7 @@ object Main extends App {
 		
 		print("Higher Order Functions")
 		
-			
+		
 	}
 	
 	def future_failures(): Unit = {
